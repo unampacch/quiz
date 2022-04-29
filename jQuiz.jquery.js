@@ -1,4 +1,7 @@
 /*
+ * 	Plugin de Preguntas v2.1 - 29/04/2022
+ *	Se agregó opción de inglés, queda pendiente corregir .titleretro, por lo pronto se dejó 
+ *	en false por default :P. rodrigoaiz@gmail.com
  *  Plugin de Preguntas v2 - 05/10/2013
  *  Agregada funcion de retroaliemntacion por el usuario tipo DIALOG - 29/01/13
  *  Agregada aleatoriedad de preguntas y respuestas
@@ -9,23 +12,24 @@
  *  jonn59@gmail.com
  */
 
-(function($) {
-	$.fn.jQuiz = function(options) {
+(function ($) {
+	$.fn.jQuiz = function (options) {
 		// Create some defaults, extending them with any options that were provided
 		var settings = $.extend({
-			'location' :         'top',
-			'background-color' : 'blue',
-			'titleretro' :       true,
-			'retro':             false,
-			'dialog':            false,
-			'aleatorio':         false,
-			'respaleatorias':    false,   
-			'controles':         false,
-			'jquiztotal':        '#jquiztotal',
-			'jquizremarks':      '#jquizremarks'
+			'location': 'top',
+			'background-color': 'blue',
+			'titleretro': false,
+			'retro': false,
+			'dialog': false,
+			'aleatorio': false,
+			'respaleatorias': false,
+			'controles': false,
+			'jquiztotal': '#jquiztotal',
+			'jquizremarks': '#jquizremarks',
+			'ingles': false
 		}, options);
 
-		return this.each(function() {
+		return this.each(function () {
 			var count = 0;
 			var howmanyquestions = $("ol > div > li", this).length;
 			var $this = this;
@@ -34,29 +38,29 @@
 			/*
 			 * Barajeamos las preguntas aleatoriamente
 			 */
-			if ( settings.aleatorio == true ){
+			if (settings.aleatorio == true) {
 				var collection = $("div.questionContainer", this).get();
-				collection.sort(function() {
-				    return Math.random()*10 > 5 ? 1 : -1;
+				collection.sort(function () {
+					return Math.random() * 10 > 5 ? 1 : -1;
 				});
-				$.each(collection,function(i,el) {
-				    $el = $(el);
-				    $el.appendTo( $el.parent() );
+				$.each(collection, function (i, el) {
+					$el = $(el);
+					$el.appendTo($el.parent());
 				});
 			}
 
 			/*
 			 * Barajeamos las respuestas aleatoriamente
 			 */
-			if ( settings.respaleatorias == true ){
+			if (settings.respaleatorias == true) {
 
 				var collection = $("div.questionContainer li ul li", this).get();
-				collection.sort(function() {
-				    return Math.random()*10 > 5 ? 1 : -1;
+				collection.sort(function () {
+					return Math.random() * 10 > 5 ? 1 : -1;
 				});
-				$.each(collection,function(i,el) {
-				    $el = $(el);
-				    $el.appendTo( $el.parent() );
+				$.each(collection, function (i, el) {
+					$el = $(el);
+					$el.appendTo($el.parent());
 				});
 			}
 
@@ -64,28 +68,47 @@
 			 * Colocamos los controles para atrazar o adelantar la pregunta
 			 */
 
-			if ( settings.controles == true ){
-				$val   = $("div.questionContainer", this);
+			function variableNext() {
+				if (settings.ingles == true) {
+					return 'Next';
+				} else {
+					return 'Siguiente';
+				}
+			}
+			function variablePrev() {
+				if (settings.ingles == true) {
+					return 'Back';
+				} else {
+					return 'Anterior';
+				}
+			}
+
+			if (settings.controles == true) {
+				$val = $("div.questionContainer", this);
 				tamano = $val.length;
 
-				$val.each(function(indice,valor){
+				$val.each(function (indice, valor) {
 					//alert(valor);
-					if (indice == 0){
+					if (indice == 0) {
 						$(this).append('<div class="btnContainer"> \
 							        <div class="prev"> &nbsp;</div> \
-							        <div class="next"> <a class="btnNext over">Siguiente</a></div> \
+							        <div class="next"> <a class="btnNext over">'
+							+ variableNext() +
+							'</a></div> \
 							        <div class="clear"> &nbsp;</div> \
 							        </div>');
-					}else if (indice == tamano-1){
+					} else if (indice == tamano - 1) {
 						$(this).append('<div class="btnContainer"> \
-							        <div class="prev"> <a class="btnPrev over">Anterior</a></div> \
+							        <div class="prev"> <a class="btnPrev over">'
+							+ variablePrev() +
+							'</a></div> \
 							        <div class="next"> &nbsp;</div> \
 							        <div class="clear"> &nbsp;</div> \
 							        </div>');
-					}else{
+					} else {
 						$(this).append('<div class="btnContainer"> \
-							        <div class="prev"> <a class="btnPrev over">Anterior</a></div> \
-							        <div class="next"> <a class="btnNext over">Siguiente</a></div> \
+							        <div class="prev"> <a class="btnPrev over">'+ variablePrev() + '</a></div> \
+							        <div class="next"> <a class="btnNext over">'+ variableNext() + '</a></div> \
 							        <div class="clear"> &nbsp;</div> \
 							        </div>');
 					}
@@ -96,13 +119,13 @@
 
 			//Ocultamos las preguntas
 			$("div.questionContainer", this).hide().first().show();
-                        //$("div.questionContainer", this).hide().first().attr("style", "display: block !important; visibility: visible !important");
-                        $(settings.jquizremarks,$this).hide();
+			//$("div.questionContainer", this).hide().first().attr("style", "display: block !important; visibility: visible !important");
+			$(settings.jquizremarks, $this).hide();
 
 
 
 
-			$("ol li ul li", this).click(function() {
+			$("ol li ul li", this).click(function () {
 
 				if (!($(this).parent("ul").hasClass("answered"))) {
 
@@ -115,10 +138,15 @@
 						$(this).addClass("wronganswer");
 						$(this).siblings(".correct").addClass("realanswer");
 						// animate explanation & add styling depending on answer
-						if (settings.titleretro)
-							$(this).parent().parent().children("div").prepend('<p>¡No es la respuesta esperada! </p>');
-						$(this).parent().parent().children("div").addClass("wrongbox");
-						$(this).parent().parent().children("div").fadeTo(500, 1);
+						if (settings.titleretro) {
+							if (settings.ingles == false) {
+								$(this).parent().parent().children("div").prepend('<div class="d-block w-100 my-5">¡No es la respuesta esperada! </div>');
+							} else {
+								$(this).parent().parent().children("div").prepend('<div class="d-block w-100 my-5">That\'s wrong! </div>');
+							}
+						}
+						$(this).parent().children("div").addClass("wrongbox");
+						$(this).parent().children("div").fadeTo(500, 1);
 					}
 
 					// runs if they clicked the correct answer
@@ -128,32 +156,49 @@
 						// makes correct answer green
 						$(this).addClass("correctanswer");
 						// animate explanation & add styling depending on answer
-						if (settings.titleretro)
-							$(this).parent().parent().children("div").prepend('<p>¡Muy bien!</p>');
+						if (settings.titleretro) {
+							if (settings.ingles == false) {
+								$(this).parent().parent().children("div").prepend('<div class="d-block w-100 my-5">¡Muy bien!</div>');
+							} else {
+								$(this).parent().parent().children("div").prepend('<div class="d-block w-100 my-5">Good job!</div>');
+							}
+						}
 						$(this).parent().parent().children("div").addClass("rightbox");
 						$(this).parent().parent().children("div").fadeTo(750, 1);
 					}
 
-					if ($('ul.answered',$this).length == howmanyquestions) {
-						if ( !settings.retro ){
+					if ($('ul.answered', $this).length == howmanyquestions) {
+
+						if (!settings.retro) {
+
 							$(settings.jquizremarks).fadeIn('slow');
-							$(settings.jquiztotal).html('Contestaste bien ' + count + ' de ' + howmanyquestions + ' preguntas. <br /> Si tuviste menos de la mitad de los aciertos te recomendamos volver a revisar este material con más atención.');
-						}else if(!settings.dialog){
+							if (settings.ingles == false) {
+								$(settings.jquiztotal).html('Contestaste bien ' + count + ' de ' + howmanyquestions + ' preguntas. <br /> Si tuviste menos de la mitad de los aciertos te recomendamos volver a revisar este material con más atención.');
+							} else {
+								$(settings.jquiztotal).html('You answered correct ' + count + ' of ' + howmanyquestions + ' questions. <br /> If you had the half or less correct answers, you should go back and read again the learning resource.');
+							}
+
+						} else if (!settings.dialog) {
 							$(settings.jquizremarks).fadeIn('slow');
-							$(settings.jquiztotal).html('Contestaste bien ' + count + ' de ' + howmanyquestions + ' preguntas. <br /> '+ settings.retro);
-						}else{
-							var caja = jQuery('<div class="dialogletra" title="Retroalimentación">Contestaste bien ' + count + ' de ' + howmanyquestions + ' preguntas. <br /> '+ settings.retro +'</div>');
+							if (settings.ingles == false) {
+								$(settings.jquiztotal).html('Contestaste bien ' + count + ' de ' + howmanyquestions + ' preguntas. <br /> ' + settings.retro);
+							} else {
+								$(settings.jquiztotal).html('You answered correct ' + count + ' of ' + howmanyquestions + ' questions. <br /> ' + settings.retro);
+							}
+
+						} else {
+							var caja = jQuery('<div class="dialogletra" title="Retroalimentación">Contestaste bien ' + count + ' de ' + howmanyquestions + ' preguntas. <br /> ' + settings.retro + '</div>');
 							caja.dialog({
-							modal: true,
-							width: 400,
-							});	
+								modal: true,
+								width: 400,
+							});
 						}
 					}
 				}
 			});
 
-			$('.btnNext', this).click(function() {
-				$(this).parents('.questionContainer').fadeOut(500, function() {
+			$('.btnNext', this).click(function () {
+				$(this).parents('.questionContainer').fadeOut(500, function () {
 					$(this).next().fadeIn(500);
 					//$(this).next().show();
 				});
@@ -161,8 +206,8 @@
 				el.width(el.width() + 120 + 'px');
 			});
 
-			$('.btnPrev', this).click(function() {
-				$(this).parents('.questionContainer').fadeOut(500, function() {
+			$('.btnPrev', this).click(function () {
+				$(this).parents('.questionContainer').fadeOut(500, function () {
 					$(this).prev().fadeIn(500)
 				});
 				var el = $('#progress');
